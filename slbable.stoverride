@@ -1,19 +1,22 @@
-parsers:
-  - reg: 'slbable$'
-    yaml:
-      append-proxy-groups:
-        - name: ⚖️ 负载均衡-散列
-          type: load-balance
-          url: 'http://www.google.com/generate_204'
-          interval: 300
-          strategy: consistent-hashing
-        - name: ⚖️ 负载均衡-轮询
-          type: load-balance
-          url: 'http://www.google.com/generate_204'
-          interval: 300
-          strategy: round-robin
-      commands:
-        - proxy-groups.⚖️ 负载均衡-散列.proxies=[]proxyNames
-        - proxy-groups.0.proxies.0+⚖️ 负载均衡-散列
-        - proxy-groups.⚖️ 负载均衡-轮询.proxies=[]proxyNames
-        - proxy-groups.0.proxies.0+⚖️ 负载均衡-轮询
+name: 负载均衡覆写
+desc: 自动创建散列和轮询负载均衡组
+
+proxy-groups:
+  - name: ⚖️ 负载均衡-散列
+    type: load-balance
+    url: http://www.gstatic.com/generate_204
+    interval: 150
+    strategy: consistent-hashing
+    filter: "(?i).*" # 自动包含所有节点
+
+  - name: ⚖️ 负载均衡-轮询
+    type: load-balance
+    url: http://www.gstatic.com/generate_204
+    interval: 150
+    strategy: round-robin
+    filter: "(?i).*"
+
+# 将这两个组插入到你的主选择组（通常是第一个）中
+commands:
+  - proxy-groups.0.proxies.0+⚖️ 负载均衡-散列
+  - proxy-groups.0.proxies.0+⚖️ 负载均衡-轮询
