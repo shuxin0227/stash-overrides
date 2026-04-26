@@ -1,8 +1,7 @@
-name: 负载均衡自动化
-desc: 自动为所有节点创建散列和轮询负载均衡组
+name: 负载均衡自动化-修复版
+desc: 强制抓取 ACL4SSR 转换后的所有节点
 author: Gemini
 
-# 1. 定义负载均衡策略组
 proxy-groups:
   - name: ⚖️ 负载均衡-散列
     type: load-balance
@@ -10,8 +9,8 @@ proxy-groups:
     interval: 180
     strategy: consistent-hashing
     udp: true
-    # 方案 A：尝试使用更通用的匹配（匹配所有包含字母、数字或中文的名称）
-    filter: ".+" 
+    # 关键修改：在 Stash 中强制引用所有订阅节点
+    all-proxies: true 
 
   - name: ⚖️ 负载均衡-轮询
     type: load-balance
@@ -19,4 +18,11 @@ proxy-groups:
     interval: 180
     strategy: round-robin
     udp: true
-    filter: ".+"
+    # 关键修改：在 Stash 中强制引用所有订阅节点
+    all-proxies: true
+
+commands:
+  # 由于你使用了 ACL4SSR 完整配置，第一个组通常是“开启”或“节点选择”
+  # 这里建议直接指定名字插入，确保它出现在 ACL4SSR 的“Proxy”组里
+  - proxy-groups.Proxy.proxies.0+⚖️ 负载均衡-散列
+  - proxy-groups.Proxy.proxies.0+⚖️ 负载均衡-轮询
