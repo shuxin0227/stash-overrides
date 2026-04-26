@@ -10,7 +10,8 @@ proxy-groups:
     interval: 180
     strategy: consistent-hashing
     udp: true
-    filter: "(?i).*" # 匹配所有节点，Stash 推荐用法
+    # 方案 A：尝试使用更通用的匹配（匹配所有包含字母、数字或中文的名称）
+    filter: ".+" 
 
   - name: ⚖️ 负载均衡-轮询
     type: load-balance
@@ -18,10 +19,4 @@ proxy-groups:
     interval: 180
     strategy: round-robin
     udp: true
-    filter: "(?i).*"
-
-# 2. 使用 commands 将新组插入到你的主选择组中
-commands:
-  # 将新建的 LB 组插入到第一个策略组（索引 0）的最前面
-  - proxy-groups.0.proxies.0+⚖️ 负载均衡-散列
-  - proxy-groups.0.proxies.0+⚖️ 负载均衡-轮询
+    filter: ".+"
