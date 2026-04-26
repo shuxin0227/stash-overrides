@@ -1,19 +1,31 @@
-name: 负载均衡组配置（通用版）
-desc: 自动包含所有节点，无需指定订阅标签
+name: ⚖️ 负载均衡自动分组
+desc: 自动提取所有节点并创建散列与轮询负载均衡组
+category: 策略组优化
 
 proxy-groups:
-  # 散列负载均衡
-  - name: ⚖️ 负载均衡-散列
+  # 1. 定义负载均衡-散列组
+  - name: "⚖️ 负载均衡-散列"
     type: load-balance
-    proxies: [__ALL__]   # ⚠️ Stash 特殊语法：代表所有代理节点
+    url: "http://www.gstatic.com/generate_204"
+    interval: 150
     strategy: consistent-hashing
-    url: http://www.gstatic.com/generate_204
-    interval: 300
-  
-  # 轮询负载均衡
-  - name: ⚖️ 负载均衡-轮询
+    # 使用正则表达式 ".*" 自动匹配并包含所有节点
+    include-all-proxies: true
+    # 如果你想排除某些节点（如过期、流量消耗），可以使用 filter
+    # filter: "(?i)香港|日本" 
+
+  # 2. 定义负载均衡-轮询组
+  - name: "⚖️ 负载均衡-轮询"
     type: load-balance
-    proxies: [__ALL__]   # 同样代表所有节点
+    url: "http://www.gstatic.com/generate_204"
+    interval: 150
     strategy: round-robin
-    url: http://www.gstatic.com/generate_204
-    interval: 300
+    include-all-proxies: true
+
+  # 3. 将上述组插入到你的主代理组中 (通常 Stash 默认主组名为 Proxy)
+  # 注意：Stash 的覆写会尝试合并同名策略组
+  - name: Proxy
+    type: select
+    proxies:
+      - "⚖️ 负载均衡-散列"
+      - "⚖️ 负载均衡-轮询"
