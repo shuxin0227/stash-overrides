@@ -1,30 +1,19 @@
-name: 负载均衡自动化-最终修复版
-desc: 解决 ACL4SSR 转换后节点不显示的问题
-author: Gemini
+name: 负载均衡组配置（通用版）
+desc: 自动包含所有节点，无需指定订阅标签
 
 proxy-groups:
+  # 散列负载均衡
   - name: ⚖️ 负载均衡-散列
     type: load-balance
-    url: http://www.gstatic.com/generate_204
-    interval: 180
+    proxies: [__ALL__]   # ⚠️ Stash 特殊语法：代表所有代理节点
     strategy: consistent-hashing
-    udp: true
-    # 强制匹配所有非隐藏节点
-    filter: ".+"
-
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+  
+  # 轮询负载均衡
   - name: ⚖️ 负载均衡-轮询
     type: load-balance
-    url: http://www.gstatic.com/generate_204
-    interval: 180
+    proxies: [__ALL__]   # 同样代表所有节点
     strategy: round-robin
-    udp: true
-    filter: ".+"
-
-commands:
-  # 1. 先尝试将这两个组插入到 ACL4SSR 默认的 Proxy 组
-  - proxy-groups.Proxy.proxies.0+⚖️ 负载均衡-散列
-  - proxy-groups.Proxy.proxies.0+⚖️ 负载均衡-轮询
-  
-  # 2. 如果你的主组叫“节点选择”，请取消下面两行的注释（删掉前面的#）
-  # - proxy-groups.节点选择.proxies.0+⚖️ 负载均衡-散列
-  # - proxy-groups.节点选择.proxies.0+⚖️ 负载均衡-轮询
+    url: http://www.gstatic.com/generate_204
+    interval: 300
