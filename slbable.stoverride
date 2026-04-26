@@ -3,29 +3,22 @@ desc: 自动提取所有节点并创建散列与轮询负载均衡组
 category: 策略组优化
 
 proxy-groups:
-  # 1. 定义负载均衡-散列组
-  - name: "⚖️ 负载均衡-散列"
+  # ⚖️ 负载均衡 - 散列
+  - name: ⚖️ 负载均衡-散列
     type: load-balance
-    url: "http://www.gstatic.com/generate_204"
-    interval: 150
     strategy: consistent-hashing
-    # 使用正则表达式 ".*" 自动匹配并包含所有节点
-    include-all-proxies: true
-    # 如果你想排除某些节点（如过期、流量消耗），可以使用 filter
-    # filter: "(?i)香港|日本" 
-
-  # 2. 定义负载均衡-轮询组
-  - name: "⚖️ 负载均衡-轮询"
-    type: load-balance
-    url: "http://www.gstatic.com/generate_204"
+    use:
+      - default
+    filter: ".*"
+    url: http://www.gstatic.com/generate_204
     interval: 150
-    strategy: round-robin
-    include-all-proxies: true
 
-  # 3. 将上述组插入到你的主代理组中 (通常 Stash 默认主组名为 Proxy)
-  # 注意：Stash 的覆写会尝试合并同名策略组
-  - name: Proxy
-    type: select
-    proxies:
-      - "⚖️ 负载均衡-散列"
-      - "⚖️ 负载均衡-轮询"
+  # ⚖️ 负载均衡 - 轮询
+  - name: ⚖️ 负载均衡-轮询
+    type: load-balance
+    strategy: round-robin
+    use:
+      - default
+    filter: ".*"
+    url: http://www.gstatic.com/generate_204
+    interval: 150
