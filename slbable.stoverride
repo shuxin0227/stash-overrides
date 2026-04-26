@@ -1,5 +1,5 @@
-name: 负载均衡自动化-修复版
-desc: 强制抓取 ACL4SSR 转换后的所有节点
+name: 负载均衡自动化-最终修复版
+desc: 解决 ACL4SSR 转换后节点不显示的问题
 author: Gemini
 
 proxy-groups:
@@ -9,8 +9,8 @@ proxy-groups:
     interval: 180
     strategy: consistent-hashing
     udp: true
-    # 关键修改：在 Stash 中强制引用所有订阅节点
-    all-proxies: true 
+    # 强制匹配所有非隐藏节点
+    filter: ".+"
 
   - name: ⚖️ 负载均衡-轮询
     type: load-balance
@@ -18,11 +18,13 @@ proxy-groups:
     interval: 180
     strategy: round-robin
     udp: true
-    # 关键修改：在 Stash 中强制引用所有订阅节点
-    all-proxies: true
+    filter: ".+"
 
 commands:
-  # 由于你使用了 ACL4SSR 完整配置，第一个组通常是“开启”或“节点选择”
-  # 这里建议直接指定名字插入，确保它出现在 ACL4SSR 的“Proxy”组里
+  # 1. 先尝试将这两个组插入到 ACL4SSR 默认的 Proxy 组
   - proxy-groups.Proxy.proxies.0+⚖️ 负载均衡-散列
   - proxy-groups.Proxy.proxies.0+⚖️ 负载均衡-轮询
+  
+  # 2. 如果你的主组叫“节点选择”，请取消下面两行的注释（删掉前面的#）
+  # - proxy-groups.节点选择.proxies.0+⚖️ 负载均衡-散列
+  # - proxy-groups.节点选择.proxies.0+⚖️ 负载均衡-轮询
