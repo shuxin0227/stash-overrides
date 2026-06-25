@@ -1,0 +1,27 @@
+name: "⚖️ 负载均衡拓展"
+desc: "使用 filter 筛选器兼容提取所有主订阅节点"
+
+proxy-groups:
+  # 1. 散列负载均衡
+  - name: "⚖️ 负载均衡-散列"
+    type: load-balance
+    url: http://www.gstatic.com/generate_204
+    interval: 150
+    strategy: consistent-hashing
+    # 核心修正：使用 filter 正则匹配所有节点名称（.* 代表匹配任意节点名）
+    filter: ".*"
+
+  # 2. 轮询负载均衡
+  - name: "⚖️ 负载均衡-轮询"
+    type: load-balance
+    url: http://www.gstatic.com/generate_204
+    interval: 150
+    strategy: round-robin
+    filter: ".*"
+
+  # 3. 将这两个组塞进主策略组
+  - name: "🚀 节点选择"
+    type: select
+    proxies:
+      - "⚖️ 负载均衡-散列"
+      - "⚖️ 负载均衡-轮询"
