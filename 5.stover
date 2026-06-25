@@ -1,0 +1,53 @@
+name: "⚖️ 负载均衡拓展"
+desc: "使用 JS 脚本完美重写并注入负载均衡组与所有节点"
+
+# 使用 http-response 脚本拦截机场订阅内容并修改
+script:
+  - name: "动态负载均衡"
+    type: http-response
+    # 匹配规则：.* 代表对你所有的机场订阅生效，你也可以修改为特定的域名
+    pattern: ".*"
+    requires-body: true
+    timeout: 10
+    code: |
+      function main() {
+        // 1. 获取下发的原始文本并使用 Stash 内置的 YAML 解析器处理
+        let body = $response.body;
+        if (!body) { $done({}); return; }
+        let config = ClashYAML.parse(body);
+
+        // 2. 动态抓取配置文件里的所有真实节点名称
+        const proxyNames = config.proxies ? config.proxies.map((p) => p.name) : [];
+
+        // 3. 定义您的负载均衡策略组
+        const lbGroups = [
+          {
+            name: "⚖️ 负载均衡-散列",
+            type: "load-balance",
+            url: "http://www.gstatic.com/generate_204",
+            interval: 150,
+            strategy: "consistent-hashing",
+            proxies: proxyNames
+          },
+          {
+            name: "⚖️ 负载均衡-轮询",
+            type: "load-balance",
+            url: "http://www.gstatic.com/generate_204",
+            interval: 150,
+            strategy: "round-robin",
+            proxies: proxyNames
+          }
+        ];
+
+        // 4. 将新组拼接到原始策略组列表中
+        if (!config["proxy-groups"]) config["proxy-groups"] = [];
+        config["proxy-groups"] = [...config["proxy-groups"], ...lbGroups];
+
+        // 5. 将负载均衡组插入到第一个策略组的可选列表中
+        if (config["proxy-groups"].length > 0) {
+          config["proxy-groups"][0].proxies.unshift("⚖️ 负载均衡-散列", "⚖️ 负载均衡-轮询");
+        }
+
+        // 6. 重新打包回文本并返回给 Stash
+        $done({ body: ClashYAML.stringify(config) });
+      }
