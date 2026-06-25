@@ -1,0 +1,25 @@
+name: "⚖️ 负载均衡拓展"
+desc: "自动为配置添加散列与轮询负载均衡策略组"
+
+# 1. 自动创建负载均衡组，使用 include-all 动态抓取所有节点
+proxy-groups:
+  - name: "⚖️ 负载均衡-散列"
+    type: load-balance
+    url: http://www.gstatic.com/generate_204
+    interval: 150
+    strategy: consistent-hashing
+    include-all: true
+
+  - name: "⚖️ 负载均衡-轮询"
+    type: load-balance
+    url: http://www.gstatic.com/generate_204
+    interval: 150
+    strategy: round-robin
+    include-all: true
+
+# 2. 将这两个新组注入到你原文件的第一个主要策略组 Proxy 中
+  - name: "Proxy"
+    type: select
+    proxies:
+      - "⚖️ 负载均衡-散列"
+      - "⚖️ 负载均衡-轮询"
