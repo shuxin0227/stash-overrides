@@ -1,12 +1,10 @@
-name: "⚖️ 负载均衡拓展"
-desc: "使用 JS 脚本完美重写并注入负载均衡组与所有节点"
-
-# 使用 http-response 脚本拦截机场订阅内容并修改
+---
+name: ⚖️ 负载均衡拓展
+desc: 使用 JS 脚本完美重写并注入负载均衡组与所有节点
 script:
-  - name: "动态负载均衡"
+  - name: 动态负载均衡
     type: http-response
-    # 匹配规则：.* 代表对你所有的机场订阅生效，你也可以修改为特定的域名
-    pattern: ".*"
+    pattern: .*
     requires-body: true
     timeout: 10
     code: |
