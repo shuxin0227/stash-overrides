@@ -1,0 +1,26 @@
+name: "⚖️ 负载均衡拓展"
+desc: "利用 Stash 原生 Mixin 完美注入负载均衡"
+
+# 1. 强行在配置中创建这两个负载均衡策略组
+# 使用 filter: ".*" 代表在当前主配置的节点池里，正则匹配并抓取所有节点
+proxy-groups:
+  - name: "⚖️ 负载均衡-散列"
+    type: load-balance
+    url: http://www.gstatic.com/generate_204
+    interval: 150
+    strategy: consistent-hashing
+    filter: ".*"
+
+  - name: "⚖️ 负载均衡-轮询"
+    type: load-balance
+    url: http://www.gstatic.com/generate_204
+    interval: 150
+    strategy: round-robin
+    filter: ".*"
+
+# 2. 将这两个组塞进您的主策略组（根据您原文件，主组名叫 Proxy）
+  - name: "Proxy"
+    type: select
+    proxies:
+      - "⚖️ 负载均衡-散列"
+      - "⚖️ 负载均衡-轮询"
